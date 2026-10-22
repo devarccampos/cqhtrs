@@ -1383,7 +1383,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ========================================================
-  // 14. ABERTURA DO SITE (VÍDEO DE INTRODUÇÃO EM ASSETS - 5s)
+  // 14. ABERTURA DO SITE (VÍDEO DE INTRODUÇÃO EM ASSETS - 3s)
   // ========================================================
   const introOverlay = document.getElementById('site-intro-overlay');
   const introVideo = document.getElementById('intro-video');
@@ -1397,6 +1397,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const TARGET_INTRO_SECONDS = 3;
   let introClosed = false;
+  let introClosingStarted = false;
   let autoCloseTimer = null;
 
   function configureIntroSpeed() {
@@ -1404,7 +1405,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dur = (introVideo.duration && !isNaN(introVideo.duration) && introVideo.duration > 0)
       ? introVideo.duration
       : 10;
-    const speed = dur / TARGET_INTRO_SECONDS; // Vídeo de 10s acelerado para finalizar em 5s (2.0x)
+    const speed = dur / TARGET_INTRO_SECONDS; // Vídeo acelerado para finalizar em 3s
     introVideo.defaultPlaybackRate = speed;
     introVideo.playbackRate = speed;
   }
@@ -1416,13 +1417,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }, (TARGET_INTRO_SECONDS * 1000) + 150);
   }
 
+  function fadeOutAudio(durationMs = 700) {
+    if (!introVideo || introVideo.muted || introVideo.volume <= 0) return;
+    const startVol = introVideo.volume;
+    const startTime = performance.now();
+    function step(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / durationMs);
+      introVideo.volume = Math.max(0, startVol * (1 - progress));
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
   function initIntroVideo() {
     if (!introOverlay || !introVideo) return;
 
     // Bloqueia rolagem do fundo enquanto a abertura estiver ativa
     document.body.style.overflow = 'hidden';
 
-    // Configura a velocidade acelerada para 5 segundos
+    // Configura a velocidade equilibrada para 5 segundos
     configureIntroSpeed();
     introVideo.addEventListener('loadedmetadata', configureIntroSpeed);
     introVideo.addEventListener('canplay', configureIntroSpeed);
@@ -1440,11 +1456,16 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Atualização da barra de progresso da abertura sincronizada com os 5 segundos
+    // Atualização da barra de progresso da abertura e disparo antecipado da transição suave
     introVideo.addEventListener('timeupdate', () => {
       if (introVideo.duration && introProgressFill) {
         const pct = Math.min(100, (introVideo.currentTime / introVideo.duration) * 100);
         introProgressFill.style.width = `${pct}%`;
+      }
+
+      // Inicia a transição suave antecipada nos últimos instantes do vídeo para crossfade perfeito
+      if (introVideo.duration && (introVideo.duration - introVideo.currentTime <= 1.0) && !introClosingStarted) {
+        closeIntroVideo();
       }
     });
 
@@ -1462,6 +1483,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (introAudioIcon) introAudioIcon.className = 'fa-solid fa-volume-xmark';
           if (introAudioText) introAudioText.textContent = 'Ativar Som';
         } else {
+          introVideo.volume = 1;
           if (introAudioIcon) introAudioIcon.className = 'fa-solid fa-volume-high text-gold';
           if (introAudioText) introAudioText.textContent = 'Desativar Som';
         }
@@ -1495,28 +1517,42 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeIntroVideo() {
     if (introClosed || !introOverlay) return;
     introClosed = true;
+    introClosingStarted = true;
     clearTimeout(autoCloseTimer);
 
-    introOverlay.classList.add('intro-hidden');
-    document.body.style.overflow = '';
+    // Fade-out suave do áudio
+    fadeOutAudio(800);
 
+    // Inicia a transição visual suave do overlay (fade out + blur + leve zoom ótico)
+    introOverlay.classList.add('intro-hidden');
+
+    // Desbloqueia rolagem e ativa a entrada suave/revelação dos elementos do site
+    document.body.style.overflow = '';
+    document.body.classList.add('site-revealed');
+
+    // Mantém o vídeo rodando suavemente durante a dissolução de 1.15s antes de pausar
     setTimeout(() => {
       if (introVideo) {
         introVideo.pause();
       }
       introOverlay.style.display = 'none';
-    }, 800);
+    }, 1150);
   }
 
   function replayIntroVideo() {
     if (!introOverlay || !introVideo) return;
     introClosed = false;
+    introClosingStarted = false;
+    document.body.classList.remove('site-revealed');
     introOverlay.style.display = 'flex';
     void introOverlay.offsetWidth; // reflow para reiniciar animação
     introOverlay.classList.remove('intro-hidden');
     document.body.style.overflow = 'hidden';
     configureIntroSpeed();
     introVideo.currentTime = 0;
+    if (!introVideo.muted) {
+      introVideo.volume = 1;
+    }
     startAutoCloseTimer();
     introVideo.play().catch(() => { });
   }

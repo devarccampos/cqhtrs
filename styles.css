@@ -16,6 +16,9 @@
   --primary-soft: #fef3c7;
   --primary-glow: rgba(245, 158, 11, 0.35);
 
+  /* Hero Banner Image */
+  --hero-banner: url('assets/banner_light.png');
+
   /* Neutrals & Dark Tones */
   --bg-dark: #0b0f19;
   --bg-surface-dark: #111827;
@@ -94,6 +97,9 @@
   --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.55);
   --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.65);
   --shadow-xl: 0 20px 30px rgba(0, 0, 0, 0.75);
+
+  /* Hero Banner Image */
+  --hero-banner: url('assets/banner_black.png');
 }
 
 /* ========================================================
@@ -522,10 +528,19 @@ button, input, select, textarea {
   inset: 0;
   background-size: cover;
   background-position: center right;
+  background-image: url('assets/banner_light.png');
+  background-image: var(--hero-banner);
+  opacity: 0.45;
+  filter: contrast(1.08) brightness(0.95);
+  transform: scale(1.02);
+  transition: transform 10s ease, background-image 0.4s ease, opacity 0.4s ease;
+}
+
+[data-theme="dark"] .hero-backdrop {
+  background-image: url('assets/banner_black.png');
+  background-image: var(--hero-banner);
   opacity: 0.38;
   filter: contrast(1.1) brightness(0.9);
-  transform: scale(1.02);
-  transition: transform 10s ease;
 }
 
 .hero-gradient-overlay {
@@ -2795,18 +2810,31 @@ button, input, select, textarea {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-              visibility 0.8s ease;
+  transition: opacity 1.15s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 1.15s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 1.15s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 1.15s ease;
   visibility: visible;
   opacity: 1;
+  filter: blur(0px);
 }
 
 .site-intro-overlay.intro-hidden {
   opacity: 0;
-  transform: scale(1.04);
+  transform: scale(1.06);
+  filter: blur(10px);
   visibility: hidden;
   pointer-events: none;
+}
+
+.site-intro-overlay.intro-hidden .intro-top-bar {
+  opacity: 0;
+  transform: translateY(-18px);
+}
+
+.site-intro-overlay.intro-hidden .intro-bottom-bar {
+  opacity: 0;
+  transform: translateY(18px);
 }
 
 .intro-video-container {
@@ -2840,6 +2868,7 @@ button, input, select, textarea {
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0) 100%);
   z-index: 10;
   gap: 1.5rem;
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .intro-logo {
@@ -2911,6 +2940,7 @@ button, input, select, textarea {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .intro-progress-track {
@@ -2987,5 +3017,133 @@ button, input, select, textarea {
   .intro-enter-site {
     font-size: 0.75rem;
     padding: 0.4rem 0.85rem;
+  }
+}
+
+/* ========================================================
+   CINEMATIC SITE ENTRANCE REVEAL (TRANSIÇÃO SUAVE PÓS-VÍDEO)
+   ======================================================== */
+@keyframes siteHeaderEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(-18px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes siteAnnouncementEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroBackdropRevealLight {
+  0% {
+    opacity: 0;
+    transform: scale(1.10);
+    filter: contrast(1.15) brightness(0.7) blur(8px);
+  }
+  100% {
+    opacity: 0.45;
+    transform: scale(1.02);
+    filter: contrast(1.08) brightness(0.95) blur(0);
+  }
+}
+
+@keyframes heroBackdropRevealDark {
+  0% {
+    opacity: 0;
+    transform: scale(1.10);
+    filter: contrast(1.2) brightness(0.6) blur(8px);
+  }
+  100% {
+    opacity: 0.38;
+    transform: scale(1.02);
+    filter: contrast(1.1) brightness(0.9) blur(0);
+  }
+}
+
+@keyframes heroOverlayFade {
+  0% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+body.site-revealed .top-announcement {
+  animation: siteAnnouncementEntrance 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+body.site-revealed .main-header {
+  animation: siteHeaderEntrance 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+}
+
+body.site-revealed .hero-backdrop {
+  animation: heroBackdropRevealLight 1.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+[data-theme="dark"] body.site-revealed .hero-backdrop {
+  animation: heroBackdropRevealDark 1.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+body.site-revealed .hero-gradient-overlay {
+  animation: heroOverlayFade 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+body.site-revealed .hero-pill {
+  animation: heroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+}
+
+body.site-revealed .hero-title {
+  animation: heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+}
+
+body.site-revealed .hero-subtitle {
+  animation: heroFadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.38s both;
+}
+
+body.site-revealed .hero-actions {
+  animation: heroFadeUp 1.0s cubic-bezier(0.16, 1, 0.3, 1) 0.50s both;
+}
+
+body.site-revealed .search-card-wrapper {
+  animation: heroFadeUp 1.05s cubic-bezier(0.16, 1, 0.3, 1) 0.62s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-intro-overlay,
+  body.site-revealed .main-header,
+  body.site-revealed .top-announcement,
+  body.site-revealed .hero-backdrop,
+  body.site-revealed .hero-pill,
+  body.site-revealed .hero-title,
+  body.site-revealed .hero-subtitle,
+  body.site-revealed .hero-actions,
+  body.site-revealed .search-card-wrapper {
+    animation: none !important;
+    transition: opacity 0.3s ease !important;
+    transform: none !important;
+    filter: none !important;
   }
 }

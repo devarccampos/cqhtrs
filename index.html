@@ -18,6 +18,10 @@
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+  <!-- Preload Hero Banners for Instant Theme Switching -->
+  <link rel="preload" as="image" href="assets/banner_light.png">
+  <link rel="preload" as="image" href="assets/banner_black.png">
+
   <!-- Stylesheet -->
   <link rel="stylesheet" href="styles.css">
 
@@ -163,7 +167,7 @@
 
   <!-- Hero Section -->
   <section class="hero-section" id="hero">
-    <div class="hero-backdrop" style="background-image: url('assets/banner.jpg');"></div>
+    <div class="hero-backdrop" id="hero-backdrop"></div>
     <div class="hero-gradient-overlay"></div>
 
     <div class="container hero-container">
